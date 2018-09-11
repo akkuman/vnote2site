@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Akkuman的笔记</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.5.17-beta.0/vue.js"></script>
+    <script src="https://cdn.bootcss.com/markdown-it/8.4.1/markdown-it.min.js"></script>
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+    <link href="https://cdn.bootcss.com/highlight.js/9.12.0/styles/atom-one-dark.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Akkuman的笔记</h1>
+        <div class="row" id="note">
+            <div class="col-sm-4">
+                <ul class="nav">
+                    <li class="container-fluid" v-for="(dirinfo, index) in sub_directories">
+                        <button class="btn btn-default col-sm-12" style="text-align:left;" @click="getNextDir(index)">+&nbsp;{{ dirinfo.name }}</button>
+                    </li>
+                    <li class="container-fluid" v-for="(fileinfo, index) in files">
+                        <button class="btn btn-default col-sm-12" style="text-align:left;" @click="showMd(index)">&nbsp;&nbsp;&nbsp;&nbsp;{{ fileinfo.name }}</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-sm-8" v-html="mditHtml"></div>
+        </div>
+    </div>
+    <script>
+        var dirlist = new Vue({
+            el: '#note',
+            data: {
+                current_dir: '/',
+                sub_directories: [],
+                files: [],
+                image_folder: '',
+                mditHtml: '',
+            },
+            created: function() {
+                this.getJson('/');
+            },
+            methods: {
+                getNextDir: function (index) {
+                    this.current_dir += this.sub_directories[index]['name'] + '/';
+                    this.getJson(this.current_dir);
+                },
+                showMd: function (index) {
+                    let filename = this.files[index]['name'];
+                    this.md2html(filename);
+                },
+                getJson: function (dir) {
+                    let _self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: dir+'_vnote.json',
+                        success: function (data) {
+                            _self.sub_directories = data['sub_directories'];
+                            _self.files = data['files'];
+                            _self.image_folder = data['image_folder'];
+                        }
+                    });
+                },
+                md2html: function (filename) {
+                    let _self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: _self.current_dir+filename,
+                        success: function (data) {
+                            data = data.replace(/(\!\[\]\()(.+?)(\))/ig, '$1'+_self.current_dir+'$2$3')
+                            let md = window.markdownit();
+                            _self.mditHtml = md.render(data);
+                        }
+                    });
+                }
+            },
+
+        });
+        hljs.initHighlightingOnLoad();
+    </script>
+</body>
+</html>
