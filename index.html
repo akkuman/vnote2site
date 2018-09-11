@@ -68,7 +68,7 @@
                         type: 'GET',
                         url: _self.current_dir+filename,
                         success: function (data) {
-                            data = data.replace(/(\!\[\]\()(.+?)(\))/ig, '$1'+_self.current_dir+'$2$3')
+                            data = data.replace(/(\!\[.*?\]\()(.+?)(\))/ig, '$1'+_self.current_dir+'$2$3')
                             let md = window.markdownit();
                             _self.mditHtml = md.render(data);
                         }
