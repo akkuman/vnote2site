@@ -17,6 +17,9 @@
         <div class="row" id="note">
             <div class="col-sm-4">
                 <ul class="nav">
+                    <li class="container-fluid" v-if="pdir_show">
+                        <button class="btn btn-default col-sm-12" style="text-align:left;" @click="toPDir">&nbsp;&nbsp;..</button>
+                    </li>
                     <li class="container-fluid" v-for="(dirinfo, index) in sub_directories">
                         <button class="btn btn-default col-sm-12" style="text-align:left;" @click="getNextDir(index)">+&nbsp;{{ dirinfo.name }}</button>
                     </li>
@@ -43,12 +46,22 @@
                 files: [],
                 image_folder: '',
                 mditHtml: '',
+                pdir_show: false,
             },
             created: function() {
                 this.getJson('/');
             },
             methods: {
+                toPDir: function() {
+                    if (this.current_dir !== '/') {
+                        this.current_dir = this.current_dir.substring(0, this.current_dir.lastIndexOf('/', this.current_dir.length - 2)) + '/';
+                        if (this.current_dir === '/')
+                            this.pdir_show = false;
+                        this.getJson(this.current_dir);
+                    }
+                },
                 getNextDir: function (index) {
+                    this.pdir_show = true;
                     this.current_dir += this.sub_directories[index]['name'] + '/';
                     this.getJson(this.current_dir);
                 },
